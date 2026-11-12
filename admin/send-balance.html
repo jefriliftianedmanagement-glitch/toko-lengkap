@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#5b5bf0" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="/css/pwa.css" />
+  <meta name="robots" content="noindex" />
+  <title>Send Balance - Admin FakeShop</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  <script src="/js/app.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/send-balance.js" defer></script>
+  <script src="/js/pwa.js" defer></script>
+</head>
+<body data-page="send-balance">
+  <main data-title="Send Balance">
+    <div class="send-intro">
+      <div>
+        <h2>Kirim saldo virtual</h2>
+        <p>Tambahkan saldo langsung ke wallet pengguna menggunakan ID akun 10 digit. Setiap pengiriman dicatat sebagai transaksi dan audit admin.</p>
+      </div>
+      <a class="btn btn-ghost" href="users.html">Lihat pengguna</a>
+    </div>
+
+    <div class="send-layout">
+      <section class="panel send-panel" aria-labelledby="sendFormTitle">
+        <div class="send-panel-head">
+          <span class="send-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/><path d="M4 12a8 8 0 1 0 8-8"/></svg>
+          </span>
+          <div>
+            <h2 id="sendFormTitle">Detail pengiriman</h2>
+            <p>Pastikan ID penerima dan nominal sudah benar.</p>
+          </div>
+        </div>
+
+        <form id="sendForm" novalidate>
+          <div class="field">
+            <label for="accountId">ID akun penerima</label>
+            <div class="send-id-row">
+              <input class="input" id="accountId" name="account_id" type="text" inputmode="numeric" autocomplete="off" maxlength="10" pattern="[1-9][0-9]{9}" placeholder="Contoh: 1234567890" required />
+              <button class="btn btn-ghost" id="lookupBtn" type="button">Periksa ID</button>
+            </div>
+            <span class="hint">Masukkan ID akun 10 digit. Username dan saldo saat ini akan ditampilkan setelah pemeriksaan.</span>
+          </div>
+
+          <div class="send-recipient" id="recipientCard" hidden aria-live="polite">
+            <div class="send-recipient-avatar" id="recipientAvatar">U</div>
+            <div class="send-recipient-info">
+              <strong id="recipientName">-</strong>
+              <span id="recipientMeta">-</span>
+              <small id="recipientBalance">Saldo saat ini: -</small>
+            </div>
+            <span class="send-recipient-status" id="recipientStatus"></span>
+          </div>
+          <p class="send-inline-state" id="lookupState" role="status" aria-live="polite">Periksa ID akun untuk memastikan penerima yang benar.</p>
+
+          <div class="field">
+            <label for="amount">Nominal saldo</label>
+            <div class="send-amount-wrap">
+              <span aria-hidden="true">Rp</span>
+              <input class="input" id="amount" name="amount" type="text" inputmode="numeric" autocomplete="off" maxlength="13" placeholder="0" required />
+            </div>
+            <span class="hint">Nominal berupa angka bulat, maksimal Rp1.000.000.000.000.</span>
+          </div>
+
+          <div class="field">
+            <label for="note">Catatan pengiriman <span class="send-optional">Opsional</span></label>
+            <textarea class="input" id="note" name="note" rows="3" maxlength="250" placeholder="Contoh: Bonus event November"></textarea>
+            <span class="hint"><span id="noteCount">0</span>/250 karakter. Catatan tersimpan pada detail transaksi.</span>
+          </div>
+
+          <div class="send-preview-total">
+            <span>Total saldo yang dikirim</span>
+            <strong id="amountPreview">Rp0</strong>
+          </div>
+          <button class="btn btn-primary btn-block" id="sendBtn" type="submit" disabled>Kirim saldo</button>
+          <p class="send-warning">Pengiriman yang berhasil langsung menambah saldo penerima dan tidak dapat dibatalkan dari halaman ini.</p>
+        </form>
+      </section>
+
+      <aside class="send-side">
+        <section class="panel send-guide">
+          <div class="send-guide-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3.8 7v5.5c0 4.5 3.1 7.1 8.2 8.5 5.1-1.4 8.2-4 8.2-8.5V7L12 3Z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <h2>Alur pengiriman aman</h2>
+          <ol>
+            <li>Masukkan ID akun dan periksa nama penerima.</li>
+            <li>Isi nominal serta catatan bila diperlukan.</li>
+            <li>Tinjau konfirmasi sebelum mengirim saldo.</li>
+            <li>Saldo masuk langsung dan notifikasi dikirim ke Inbox pengguna.</li>
+          </ol>
+        </section>
+
+        <section class="panel send-note-card">
+          <h3>Informasi penting</h3>
+          <div class="send-note-row"><span class="send-note-dot"></span><p>Fitur ini menggunakan saldo virtual simulasi, bukan uang sungguhan.</p></div>
+          <div class="send-note-row"><span class="send-note-dot"></span><p>Setiap pengiriman tercatat pada transaksi, wallet ledger, dan audit log.</p></div>
+          <div class="send-note-row"><span class="send-note-dot"></span><p>Pengiriman dibatasi maksimal 30 kali per jam untuk setiap admin.</p></div>
+        </section>
+
+        <section class="panel send-result" id="sendResult" hidden aria-live="polite">
+          <div class="send-result-icon" aria-hidden="true">✓</div>
+          <div>
+            <strong>Saldo berhasil dikirim</strong>
+            <p id="resultText"></p>
+            <small id="resultCode"></small>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

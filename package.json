@@ -1,0 +1,29 @@
+{
+  "name": "fake-online-shop-pwa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fake Online Shop PWA - simulasi toko online dengan saldo virtual",
+  "main": "backend/server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "create-admin": "node scripts/create-admin.js",
+    "smoke": "node scripts/smoke-test.js",
+    "test:part8": "node scripts/transaction-controller-test.js",
+    "test:pwa": "node scripts/pwa-test.js",
+    "test": "node scripts/final-test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

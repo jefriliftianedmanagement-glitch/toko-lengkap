@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#5b5bf0" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="/css/pwa.css" />
+  <meta name="description" content="Riwayat aktivitas saldo virtual FakeShop." />
+  <title>Riwayat Transaksi - FakeShop</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/app.js"></script>
+  <script src="js/history.js" defer></script>
+  <script src="/js/pwa.js" defer></script>
+</head>
+<body data-page="history">
+  <main class="container history-page">
+    <section class="page-head history-heading">
+      <div>
+        <span class="history-eyebrow">AKTIVITAS WALLET</span>
+        <h1 class="page-title">Riwayat transaksi</h1>
+        <p class="page-sub">Pantau setiap perubahan saldo virtual di akun Anda.</p>
+      </div>
+      <a class="btn btn-ghost history-inbox-link" href="mailbox.html">
+        <span data-icon="mail" data-size="17" aria-hidden="true"></span>
+        Buka Inbox
+      </a>
+    </section>
+
+    <section class="history-note" aria-label="Informasi riwayat">
+      <span class="history-note-icon" data-icon="shield" data-size="21" aria-hidden="true"></span>
+      <div>
+        <strong>Catatan saldo yang tercatat</strong>
+        <p>Riwayat menampilkan transaksi yang sudah berhasil diproses. Permintaan top-up yang belum diklaim dapat dipantau melalui Inbox dan halaman Top-up.</p>
+      </div>
+    </section>
+
+    <section class="history-toolbar" aria-label="Filter riwayat transaksi">
+      <div class="history-filters" id="historyFilters" role="group" aria-label="Jenis transaksi">
+        <button type="button" class="history-filter is-active" data-type="all" aria-pressed="true">Semua</button>
+        <button type="button" class="history-filter" data-type="TOPUP_CLAIM" aria-pressed="false">Top-up</button>
+        <button type="button" class="history-filter" data-type="ADMIN_SEND_BALANCE" aria-pressed="false">Saldo masuk</button>
+        <button type="button" class="history-filter" data-type="PURCHASE" aria-pressed="false">Pembelian</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="refreshHistory" type="button">
+        <span data-icon="clock" data-size="15" aria-hidden="true"></span>
+        Muat ulang
+      </button>
+    </section>
+
+    <section class="history-datebar" aria-label="Filter tanggal">
+      <label>Mulai tanggal <input id="historyFrom" type="date" /></label>
+      <label>Sampai tanggal <input id="historyTo" type="date" /></label>
+      <button class="btn btn-ghost btn-sm" id="clearHistoryDates" type="button">Reset tanggal</button>
+    </section>
+
+    <section id="historyList" class="history-list" aria-live="polite" aria-busy="true">
+      <div class="history-loading"><span class="spinner"></span><span>Memuat riwayat transaksi…</span></div>
+    </section>
+    <div class="history-pager" id="historyPager"></div>
+  </main>
+</body>
+</html>
