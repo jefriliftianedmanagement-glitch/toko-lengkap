@@ -54,7 +54,7 @@ check('seluruh route utama terhubung ke router API', () => {
 });
 
 check('server menyajikan folder frontend dan admin secara terpisah', () => {
-  const server = read('backend/server.js');
+  const server = read('backend/app.js');
   assert.match(server, /app\.use\('\/admin',\s*express\.static\(path\.join\(root,\s*'admin'\)\)\)/);
   assert.match(server, /app\.use\('\/',\s*express\.static\(path\.join\(root,\s*'frontend'\)\)\)/);
 });

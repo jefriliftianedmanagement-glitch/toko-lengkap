@@ -22,6 +22,21 @@ try {
   process.exit(1);
 }
 
+// Origin tambahan yang boleh memanggil API (mis. situs Netlify yang mem-proxy /api ke backend ini).
+// Isi dengan koma sebagai pemisah, contoh: https://toko-lengkap.netlify.app
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map((o) => {
+    try {
+      return new URL(o).origin;
+    } catch {
+      console.error('[ENV] ALLOWED_ORIGINS berisi URL yang tidak valid: ' + o);
+      process.exit(1);
+    }
+  });
+
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 module.exports = {
@@ -34,5 +49,7 @@ module.exports = {
   USER_TOKEN_TTL_SEC: 7 * 24 * 3600, // 7 hari
   ADMIN_TOKEN_TTL_SEC: 8 * 3600, // 8 jam
   AUTH_RATE_MAX: Number(process.env.AUTH_RATE_MAX) || 20,
-  TRUST_PROXY: process.env.TRUST_PROXY === '1',
+  // Jumlah proxy di depan server (0 = tidak ada). Nilai lama "1" tetap berlaku.
+  TRUST_PROXY: Math.max(0, parseInt(process.env.TRUST_PROXY, 10) || 0),
+  ALLOWED_ORIGINS: allowedOrigins,
 };

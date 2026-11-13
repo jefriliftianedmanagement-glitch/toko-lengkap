@@ -1,0 +1,41 @@
+# Konfigurasi Netlify untuk FakeShop (semuanya di Netlify, gratis, tanpa kartu kredit):
+#   - frontend + admin  -> situs statis (folder dist/, dirakit oleh scripts/build-netlify.js)
+#   - backend Express   -> Netlify Function  netlify/functions/api.js
+#   - database & gambar -> Supabase
+
+[build]
+  command = "node scripts/build-netlify.js"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["express"]
+
+# Semua panggilan /api/... diteruskan ke fungsi (alamat di browser tetap /api/..., satu domain,
+# jadi cookie login berfungsi)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# Header keamanan untuk halaman statis (di server lokal ini dikerjakan helmet; di Netlify halaman
+# statis disajikan CDN, sehingga header harus dipasang di sini). Isinya sama dengan CSP di backend/app.js.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; upgrade-insecure-requests"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Service worker harus selalu diambil terbaru agar update PWA terdeteksi
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
