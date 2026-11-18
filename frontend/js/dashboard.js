@@ -12,6 +12,7 @@
   var sortGroup = document.getElementById('sortGroup');
   var loadMoreWrap = document.getElementById('loadMoreWrap');
   var loadMoreBtn = document.getElementById('loadMore');
+  var purchaseRequestKeys = Object.create(null);
 
   var PAGE_SIZE = 12;
   var state = {
@@ -86,6 +87,79 @@
   function showSkeletons(n) { for (var i = 0; i < n; i++) grid.append(skeleton()); }
   function removeSkeletons() { grid.querySelectorAll('.skeleton-card').forEach(function (n) { n.remove(); }); }
 
+  function purchaseRequestKey(p) {
+    if (purchaseRequestKeys[p.id]) return purchaseRequestKeys[p.id];
+    var cryptoApi = window.crypto;
+    if (!cryptoApi || !cryptoApi.getRandomValues) throw new Error('Browser tidak mendukung keamanan transaksi. Perbarui browser Anda.');
+    if (cryptoApi.randomUUID) {
+      purchaseRequestKeys[p.id] = cryptoApi.randomUUID();
+      return purchaseRequestKeys[p.id];
+    }
+    var bytes = new Uint8Array(16);
+    cryptoApi.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    var hex = Array.from(bytes, function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+    purchaseRequestKeys[p.id] = hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+    return purchaseRequestKeys[p.id];
+  }
+
+  async function purchaseProduct(p, modal) {
+    if (modal.purchaseBusy) return;
+    modal.purchaseBusy = true;
+    var buyButton = modal.el.querySelector('.modal-foot .btn-primary');
+    if (buyButton) buyButton.disabled = true;
+
+    var confirmed = false;
+    try {
+      confirmed = await S.confirmDialog({
+        title: 'Konfirmasi pembelian?',
+        message: 'Beli "' + p.name + '" seharga ' + rupiah(p.price) + '? Nominal ini akan langsung dipotong dari saldo virtual Anda.',
+        confirmText: 'Ya, beli sekarang'
+      });
+      if (!confirmed) return;
+
+      if (buyButton) buyButton.textContent = 'Memproses...';
+      var result = await api('/products/' + encodeURIComponent(p.id) + '/purchase', {
+        method: 'POST',
+        body: { request_key: purchaseRequestKey(p) }
+      });
+      var receipt = result.purchase;
+      S.setBalance(receipt.balance_after);
+      delete purchaseRequestKeys[p.id];
+      modal.close();
+
+      var successBody = el('div', 'purchase-success');
+      successBody.append(
+        el('div', 'purchase-success-icon', '✓'),
+        el('h3', '', 'Pembelian berhasil!'),
+        el('p', '', p.name),
+        el('strong', 'purchase-success-price', rupiah(receipt.amount)),
+        el('div', 'purchase-success-meta', 'Kode transaksi: ' + receipt.transaction_code),
+        el('div', 'purchase-success-meta', 'Sisa saldo: ' + rupiah(receipt.balance_after)),
+        el('p', 'purchase-success-note', 'Pembayaran simulasi menggunakan saldo virtual FakeShop. Tidak ada uang sungguhan yang diproses.')
+      );
+      S.openModal({
+        title: 'Bukti pembelian',
+        body: successBody,
+        actions: [
+          { label: 'Lihat riwayat', className: 'btn-primary', onClick: function () { location.href = 'history.html'; } },
+          { label: 'Selesai', className: 'btn-ghost' }
+        ]
+      });
+    } catch (err) {
+      S.toast(err.message || 'Pembelian gagal diproses.', 'error', 5000);
+    } finally {
+      if (!modal.el || modal.el.isConnected) {
+        modal.purchaseBusy = false;
+        if (buyButton && buyButton.isConnected) {
+          buyButton.disabled = false;
+          buyButton.textContent = 'Beli sekarang';
+        }
+      }
+    }
+  }
+
   function openDetail(p) {
     var body = el('div');
     body.append(media(p, 'detail-media'));
@@ -99,7 +173,28 @@
     body.append(el('div', 'detail-meta', meta.join(' • ')));
     body.append(el('p', 'detail-desc', p.description || 'Belum ada deskripsi untuk produk ini.'));
 
-    S.openModal({ title: p.name, body: body, actions: [{ label: 'Tutup', className: 'btn-ghost' }] });
+    var balance = Number(S.user && S.user.balance) || 0;
+    var purchaseSummary = el('div', 'detail-purchase-summary');
+    purchaseSummary.append(
+      el('span', '', 'Saldo virtual Anda'),
+      el('strong', '', rupiah(balance))
+    );
+    body.append(purchaseSummary);
+    body.append(el('p', 'detail-purchase-hint', 'Pembelian akan memotong saldo virtual dan otomatis masuk ke riwayat transaksi. Tidak ada uang sungguhan yang digunakan.'));
+    if (balance < Number(p.price)) {
+      var topupLink = el('a', 'btn btn-ghost btn-block detail-topup-link', 'Saldo kurang? Isi saldo');
+      topupLink.href = 'topup.html';
+      body.append(topupLink);
+    }
+
+    S.openModal({
+      title: p.name,
+      body: body,
+      actions: [
+        { label: 'Beli sekarang', className: 'btn-primary', onClick: function (modal) { purchaseProduct(p, modal); } },
+        { label: 'Tutup', className: 'btn-ghost' }
+      ]
+    });
   }
 
   // ----------------------------------------------------- status tampilan

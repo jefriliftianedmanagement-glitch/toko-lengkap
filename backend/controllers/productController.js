@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
-const { fromDbError } = require('../services/rpcErrors');
+const { fromRpcError, fromDbError } = require('../services/rpcErrors');
+const { HttpError } = require('../services/httpError');
 const { escapeLike } = require('../services/validators');
 const { imageUrl } = require('../services/storage');
 
@@ -79,4 +80,25 @@ async function categories(req, res) {
   res.json({ ok: true, categories: list });
 }
 
-module.exports = { list, categories, _internal: { clampInt, imageUrl } };
+// POST /api/products/:id/purchase - saldo hanya dipotong oleh RPC database atomik.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+async function purchase(req, res) {
+  const productId = req.params.id;
+  const requestKey = req.body && req.body.request_key;
+  if (typeof productId !== 'string' || !UUID_RE.test(productId)) {
+    throw new HttpError(404, 'PRODUCT_NOT_FOUND', 'Produk tidak ditemukan atau sudah tidak tersedia.');
+  }
+  if (typeof requestKey !== 'string' || !UUID_RE.test(requestKey)) {
+    throw new HttpError(400, 'INVALID_REQUEST_KEY', 'Permintaan pembelian tidak valid. Silakan coba lagi.');
+  }
+
+  const { data, error } = await supabase.rpc('purchase_product', {
+    p_user_id: req.user.id,
+    p_product_id: productId,
+    p_request_key: requestKey,
+  });
+  if (error) throw fromRpcError(error);
+  res.json({ ok: true, purchase: data });
+}
+
+module.exports = { list, categories, purchase, _internal: { clampInt, imageUrl, UUID_RE } };

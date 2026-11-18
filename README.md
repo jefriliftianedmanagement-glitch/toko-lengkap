@@ -176,9 +176,32 @@ npm run smoke
 
 ### Catatan hosting Netlify
 
-Proyek saat ini masih memakai server Express biasa melalui `backend/server.js` (`app.listen`) dan menyajikan halaman statis dari Express. Karena itu, jangan deploy hanya folder `frontend` sebagai situs statis: endpoint `/api/*` dan sesi login akan tidak tersedia. Netlify mendukung aplikasi Express melalui Netlify Functions, tetapi memerlukan entry/function adapter dan konfigurasi routing yang sesuai; adapter tersebut belum termasuk dalam PART 10 ini. Alternatifnya, jalankan backend pada hosting Node.js dan arahkan frontend ke backend dengan konfigurasi origin/cookie/CORS yang dirancang secara eksplisit.
+Adapter Netlify sudah tersedia melalui `netlify/functions/api.js` dan `netlify.toml`. Build Netlify menjalankan `node scripts/build-netlify.js`, menyalin `frontend/` dan `admin/` ke `dist/`, serta meneruskan `/api/*` ke Netlify Function. Jangan mengubah `publish = "dist"`, konfigurasi redirect API, atau mengunggah `frontend/` saja.
 
-Variabel `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, dan `JWT_SECRET` harus diatur sebagai environment variables server-side di hosting, bukan ditulis ke file frontend atau repository. Atur `NODE_ENV=production` dan konfigurasi proxy sesuai jalur HTTPS yang dipakai. Jangan unggah `.env`.
+Atur `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, dan `JWT_SECRET` sebagai environment variables server-side untuk Functions di Netlify. Jangan menaruh service-role key atau JWT secret di frontend maupun repository. `NODE_VERSION` pada konfigurasi build disetel ke 22. Setelah deploy, periksa `/api/health` dan uji login, pembelian, riwayat, serta PWA pada domain HTTPS.
+
+## PART 12 - Pembelian produk dengan saldo virtual
+
+Halaman detail produk menyediakan tombol **Beli sekarang**. Pembelian harus dikonfirmasi dan hanya dapat dilakukan oleh user yang sedang login. Endpoint `POST /api/products/:id/purchase` mengambil identitas user dari cookie sesi server, sedangkan harga dan status aktif produk dibaca ulang dari database. Browser tidak dapat menentukan nominal potongan.
+
+Jalankan `database/part12.sql` satu kali di Supabase SQL Editor setelah PART 11. RPC `purchase_product` mengunci data user, produk, dan wallet; memeriksa saldo; mengurangi saldo; membuat transaksi `PURCHASE`; menambahkan ledger `DEBIT`; dan menaikkan `sold_count` dalam satu transaksi database. Jika salah satu langkah gagal, seluruh perubahan dibatalkan. Kunci idempotensi membuat retry request yang sama tidak memotong saldo dua kali.
+
+Setelah pembelian berhasil, header saldo diperbarui dan bukti transaksi menampilkan kode transaksi serta sisa saldo. Catatan pembelian muncul di halaman Riwayat dan daftar transaksi admin. Jika saldo tidak cukup atau produk sudah tidak aktif, pembelian ditolak tanpa mengubah saldo.
+
+Tes lokal PART 12:
+
+```bash
+node scripts/product-purchase-test.js
+npm test
+```
+
+Tes ini memeriksa route/controller, validasi UUID, pemakaian ID user dari sesi, aturan SQL atomik, dan perlindungan idempotensi tanpa koneksi Supabase. Tetap lakukan uji pembelian nominal kecil dengan akun dummy setelah menjalankan migration di Supabase.
+
+## API (PART 12)
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| POST | `/api/products/:id/purchase` | Membeli satu produk aktif dengan saldo virtual; body `{ "request_key": "UUID" }`; harga selalu dibaca dari database |
 
 ## API (PART 8)
 

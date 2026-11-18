@@ -249,6 +249,18 @@ main { padding-bottom: 96px; }
 .detail-price { font-size: 1.5rem; font-weight: 800; margin: 8px 0 2px; letter-spacing: -.02em; }
 .detail-meta { color: var(--muted); font-size: .82rem; margin-bottom: 12px; }
 .detail-desc { margin: 0; white-space: pre-wrap; color: var(--text); line-height: 1.6; overflow-wrap: anywhere; }
+.detail-purchase-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding: 14px 15px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-2); }
+.detail-purchase-summary span { color: var(--muted); font-size: .85rem; }
+.detail-purchase-summary strong { font-size: .95rem; font-variant-numeric: tabular-nums; }
+.detail-purchase-hint { margin: 10px 1px 0; color: var(--muted); font-size: .78rem; line-height: 1.55; }
+.detail-topup-link { margin-top: 12px; }
+.purchase-success { text-align: center; padding: 8px 2px 4px; }
+.purchase-success-icon { width: 58px; height: 58px; display: grid; place-items: center; margin: 0 auto 12px; border-radius: 50%; color: #fff; background: var(--success); font-size: 2rem; font-weight: 800; }
+.purchase-success h3 { margin: 0 0 4px; font-size: 1.2rem; }
+.purchase-success p { margin: 5px 0; color: var(--muted); }
+.purchase-success-price { display: block; margin: 10px 0; font-size: 1.45rem; }
+.purchase-success-meta { margin: 7px 0; padding: 10px 12px; border-radius: 11px; background: var(--surface-2); font-size: .8rem; overflow-wrap: anywhere; }
+.purchase-success-note { margin-top: 14px !important; font-size: .77rem; }
 .kv { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .kv:last-child { border-bottom: 0; }
 .kv span:first-child { color: var(--muted); font-size: .88rem; }

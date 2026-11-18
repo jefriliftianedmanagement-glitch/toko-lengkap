@@ -98,5 +98,8 @@ runSuite('PART 9', 'scripts/pwa-test.js');
 console.log('\n=== PART 11 account and history tests ===');
 runSuite('PART 11', 'scripts/part11-test.js');
 
+console.log('\n=== PART 12 product purchase tests ===');
+runSuite('PART 12', 'scripts/product-purchase-test.js');
+
 console.log(`\nHasil final test: ${passed} PASS, ${failed} FAIL`);
 if (failed > 0) process.exitCode = 1;
